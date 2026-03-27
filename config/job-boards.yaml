@@ -1,0 +1,32 @@
+boards:
+  linkedin:
+    name: "LinkedIn"
+    base_url: "https://www.linkedin.com/jobs"
+    search_url: "https://www.linkedin.com/jobs/search/"
+    requires_auth: true
+    supported_actions:
+      - search
+      - easy_apply
+      - save
+  indeed:
+    name: "Indeed"
+    base_url: "https://www.indeed.com"
+    search_url: "https://www.indeed.com/jobs"
+    requires_auth: false
+    supported_actions:
+      - search
+      - save
+  greenhouse:
+    name: "Greenhouse"
+    base_url: "https://boards.greenhouse.io"
+    requires_auth: false
+    supported_actions:
+      - search
+      - apply
+  lever:
+    name: "Lever"
+    base_url: "https://jobs.lever.co"
+    requires_auth: false
+    supported_actions:
+      - search
+      - apply

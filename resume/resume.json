@@ -1,0 +1,133 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jsonresume/resume-schema/v1.0.0/schema.json",
+  "basics": {
+    "name": "Ayush Yadav",
+    "label": "Software Engineer",
+    "image": "",
+    "email": "yadava5@miamioh.edu",
+    "phone": "",
+    "url": "",
+    "summary": "Software engineer with experience in full-stack development, passionate about building scalable applications using modern technologies.",
+    "location": {
+      "address": "",
+      "postalCode": "",
+      "city": "",
+      "countryCode": "US",
+      "region": ""
+    },
+    "profiles": [
+      {
+        "network": "LinkedIn",
+        "username": "",
+        "url": ""
+      },
+      {
+        "network": "GitHub",
+        "username": "",
+        "url": ""
+      }
+    ]
+  },
+  "work": [
+    {
+      "name": "Company Name",
+      "position": "Software Engineer",
+      "url": "",
+      "startDate": "2024-01-01",
+      "endDate": "",
+      "summary": "Description of role and responsibilities.",
+      "highlights": [
+        "Key achievement or responsibility"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "Miami University",
+      "url": "https://miamioh.edu",
+      "area": "Computer Science",
+      "studyType": "Bachelor",
+      "startDate": "",
+      "endDate": "",
+      "score": "",
+      "courses": []
+    }
+  ],
+  "skills": [
+    {
+      "name": "Frontend Development",
+      "level": "Advanced",
+      "keywords": [
+        "React",
+        "TypeScript",
+        "HTML/CSS",
+        "Tailwind CSS"
+      ]
+    },
+    {
+      "name": "Backend Development",
+      "level": "Advanced",
+      "keywords": [
+        "Node.js",
+        "Express",
+        "Python",
+        "REST APIs"
+      ]
+    },
+    {
+      "name": "Programming Languages",
+      "level": "Advanced",
+      "keywords": [
+        "JavaScript",
+        "TypeScript",
+        "Python",
+        "Java",
+        "Rust",
+        "SQL"
+      ]
+    },
+    {
+      "name": "DevOps & Tools",
+      "level": "Intermediate",
+      "keywords": [
+        "Docker",
+        "Git",
+        "GitHub Actions",
+        "MySQL",
+        "Linux"
+      ]
+    }
+  ],
+  "languages": [
+    {
+      "language": "English",
+      "fluency": "Native speaker"
+    }
+  ],
+  "projects": [
+    {
+      "name": "Project Name",
+      "description": "Brief project description.",
+      "highlights": [
+        "Key feature or technology used"
+      ],
+      "keywords": [
+        "React",
+        "Node.js"
+      ],
+      "startDate": "",
+      "endDate": "",
+      "url": "",
+      "roles": [
+        "Developer"
+      ],
+      "type": "application"
+    }
+  ],
+  "awards": [],
+  "certificates": [],
+  "publications": [],
+  "volunteer": [],
+  "interests": [],
+  "references": []
+}

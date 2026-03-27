@@ -1,0 +1,48 @@
+personal:
+  name: "Ayush Yadav"
+  email: "yadava5@miamioh.edu"
+  phone: ""
+  location: ""
+  linkedin: ""
+  github: ""
+  portfolio: ""
+
+preferences:
+  roles:
+    - "Software Engineer"
+    - "Full Stack Developer"
+    - "Backend Engineer"
+  locations:
+    - "Remote"
+    - "United States"
+  salary_range:
+    min: 70000
+    max: 150000
+  experience_level:
+    - "Entry Level"
+    - "Mid Level"
+  excluded_companies: []
+  required_keywords:
+    - "JavaScript"
+    - "TypeScript"
+    - "Python"
+    - "React"
+    - "Node.js"
+
+skills:
+  languages:
+    - "JavaScript/TypeScript"
+    - "Python"
+    - "Java"
+    - "Rust"
+    - "SQL"
+  frameworks:
+    - "React"
+    - "Node.js"
+    - "Express"
+  tools:
+    - "Docker"
+    - "Git"
+    - "GitHub Actions"
+    - "MySQL"
+  certifications: []
