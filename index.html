@@ -1,0 +1,2116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>Job Search Dashboard</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1c252e;
+      --muted: #667482;
+      --line: #d8dee5;
+      --panel: #ffffff;
+      --canvas: #f4f7f9;
+      --accent: #266c6f;
+      --accent-2: #924b2f;
+      --warn: #a15c00;
+      --bad: #9b2c2c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    header {
+      padding: 22px 28px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    h1 { margin: 0; font-size: 25px; letter-spacing: 0; }
+    .subhead { color: var(--muted); margin-top: 6px; font-size: 14px; }
+    .header-row {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .run-picker {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .run-picker select {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      padding: 5px 9px;
+      font: inherit;
+    }
+    .tracking-tools {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .tracking-tools button {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      padding: 6px 9px;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .tracking-tools input[type="file"] { display: none; }
+    main {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 22px 18px 42px;
+    }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .metric {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .metric b { display: block; font-size: 24px; }
+    .metric span { color: var(--muted); font-size: 13px; }
+    .lane {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin: 14px 0;
+      overflow: hidden;
+    }
+    .lane-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfd;
+    }
+    .lane-head h2 { margin: 0; font-size: 18px; }
+    .lane-head span {
+      min-width: 30px;
+      text-align: center;
+      background: #e7eef0;
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-weight: 700;
+    }
+    .role-card {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr) auto;
+      gap: 12px;
+      padding: 14px 16px;
+      border-top: 1px solid #edf1f4;
+    }
+    .role-card:first-of-type { border-top: 0; }
+    .rank { font-weight: 800; color: var(--accent); }
+    h3 { margin: 0 0 3px; font-size: 17px; }
+    .title, .meta, .status, .manual { margin: 3px 0; }
+    .title { font-weight: 650; }
+    .meta { color: var(--muted); font-size: 13px; }
+    .status { color: var(--accent-2); font-size: 13px; font-weight: 700; }
+    .manual { color: var(--warn); font-size: 13px; }
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-width: 420px;
+    }
+    .decision-controls {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(96px, 1fr));
+      gap: 6px;
+      width: 100%;
+    }
+    .decision-controls button {
+      min-height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--muted);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .decision-controls button.active {
+      border-color: var(--accent);
+      background: #e7f2ef;
+      color: var(--accent);
+    }
+    .decision-controls button[data-decision-choice="link_not_working"].active {
+      border-color: var(--bad);
+      background: #fbeeed;
+      color: var(--bad);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 7px 10px;
+      border-radius: 6px;
+      text-decoration: none;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .btn.secondary { background: #fff; color: var(--accent); }
+    .btn.ghost { background: #fff; border-color: var(--line); color: var(--muted); }
+    .empty { padding: 16px; color: var(--muted); margin: 0; }
+    @media (max-width: 860px) {
+      header { position: static; }
+      .summary { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+      .role-card { grid-template-columns: 38px minmax(0, 1fr); }
+      .actions { grid-column: 2; justify-content: flex-start; max-width: none; }
+      .decision-controls { grid-template-columns: 1fr; }
+      .header-row { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-row">
+      <div>
+        <h1>Top 20-30 Today</h1>
+        <div class="subhead" data-run-line>Run job-scout-dashboard-2026-06-07T202227 · Generated 2026-06-07T20:22:27-04:00 · Apply links shown here must be same-run verified.</div>
+      </div>
+      <label class="run-picker">Run date
+        <select id="runSelect" data-run-selector aria-label="Run date"></select>
+      </label>
+      <div class="tracking-tools" aria-label="Application tracking tools">
+        <button type="button" data-export-decisions>Export decisions</button>
+        <button type="button" class="import-decisions" data-import-decisions-trigger>Import decisions</button>
+        <input type="file" accept="application/json" data-import-decisions aria-label="Import decisions file">
+      </div>
+    </div>
+  </header>
+  <main>
+    <section class="summary" data-run-metrics aria-label="Run summary">
+      <div class="metric"><b data-metric="total">30</b><span>Total ranked roles</span></div>
+      <div class="metric"><b data-metric="easy">0</b><span>Easy apply links</span></div>
+      <div class="metric"><b data-metric="manual">30</b><span>Manual review</span></div>
+      <div class="metric"><b data-metric="stale">0</b><span>Stale or removed</span></div>
+    </section>
+    <section data-job-list>
+      
+      <section class="lane">
+        <div class="lane-head">
+          <h2>Easy Apply Pack</h2>
+          <span>0</span>
+        </div>
+        <p class="empty">No same-run direct-form links passed verification yet.</p>
+      </section>
+    
+      
+      <section class="lane">
+        <div class="lane-head">
+          <h2>Manual Review Pack</h2>
+          <span>30</span>
+        </div>
+        
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#1</div>
+        <div class="role-main">
+          <h3>Giga</h3>
+          <p class="title">Software Engineer (New Grads)</p>
+          <p class="meta">New York, NY; San Francisco, CA · Fit 96 · $160,000-$250,000 + equity</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|1|Giga|Software Engineer (New Grads)" aria-label="Application decision for Giga Software Engineer (New Grads)">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://jobs.ashbyhq.com/gigaml/7314c5c1-e3d0-4439-ad9f-b3b09d4dde51/application" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#2</div>
+        <div class="role-main">
+          <h3>Eventual</h3>
+          <p class="title">Software Engineer, New Grad</p>
+          <p class="meta">San Francisco, CA · Fit 94 · $120,000-$150,000 + equity</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|2|Eventual|Software Engineer, New Grad" aria-label="Application decision for Eventual Software Engineer, New Grad">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://jobs.ashbyhq.com/eventualcomputing/becb5675-3480-4d2b-b126-2acad40fd088/application" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#3</div>
+        <div class="role-main">
+          <h3>Julius AI</h3>
+          <p class="title">Software Engineer - Product (New Grad)</p>
+          <p class="meta">San Francisco, CA · Fit 93 · $130,000-$150,000/year</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|3|Julius AI|Software Engineer - Product (New Grad)" aria-label="Application decision for Julius AI Software Engineer - Product (New Grad)">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://jobs.ashbyhq.com/julius/5e0b677a-f677-44de-93c6-f7848ab5a8e6/application" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#4</div>
+        <div class="role-main">
+          <h3>Glean</h3>
+          <p class="title">Software Engineer, University Grad</p>
+          <p class="meta">Mountain View, CA · Fit 92 · $150,000-$160,000/year</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|4|Glean|Software Engineer, University Grad" aria-label="Application decision for Glean Software Engineer, University Grad">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://job-boards.greenhouse.io/gleanwork/jobs/4592324005" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#5</div>
+        <div class="role-main">
+          <h3>Loop</h3>
+          <p class="title">2026 New Grad | Software Engineer, Full-Stack (Chicago)</p>
+          <p class="meta">Chicago, IL · Fit 91 · $125,000 annual base</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|5|Loop|2026 New Grad | Software Engineer, Full-Stack (Chicago)" aria-label="Application decision for Loop 2026 New Grad | Software Engineer, Full-Stack (Chicago)">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://job-boards.greenhouse.io/loop/jobs/5981831004" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#6</div>
+        <div class="role-main">
+          <h3>Quince</h3>
+          <p class="title">Software Development Engineer [New Grad]</p>
+          <p class="meta">Palo Alto, CA · Fit 90 · $125,000-$135,000 base + bonus/equity</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|6|Quince|Software Development Engineer [New Grad]" aria-label="Application decision for Quince Software Development Engineer [New Grad]">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://job-boards.greenhouse.io/quince/jobs/5226786008" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#7</div>
+        <div class="role-main">
+          <h3>IXL Learning</h3>
+          <p class="title">Software Engineer, New Grad</p>
+          <p class="meta">San Mateo, CA · Fit 89 · $110,000-$135,000 + equity + benefits</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|7|IXL Learning|Software Engineer, New Grad" aria-label="Application decision for IXL Learning Software Engineer, New Grad">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://www.ixl.com/company/careers?gh_jid=8574194002" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#8</div>
+        <div class="role-main">
+          <h3>Pinterest</h3>
+          <p class="title">Software Engineer I, Backend</p>
+          <p class="meta">Seattle, WA; California · Fit 88 · pay transparency visible on direct page; range not extracted</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|8|Pinterest|Software Engineer I, Backend" aria-label="Application decision for Pinterest Software Engineer I, Backend">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://www.pinterestcareers.com/jobs/6816337/software-engineer-i-backend/" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#9</div>
+        <div class="role-main">
+          <h3>Compa</h3>
+          <p class="title">Software Engineer, New Grad</p>
+          <p class="meta">Denver, CO · Fit 87 · $90,000-$120,000/year</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|9|Compa|Software Engineer, New Grad" aria-label="Application decision for Compa Software Engineer, New Grad">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://jobs.ashbyhq.com/compa/ce7b36cc-3517-46c0-98fe-99924ab400da/application" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#10</div>
+        <div class="role-main">
+          <h3>Torc Robotics</h3>
+          <p class="title">Software Engineer I - Metrics for Release Implementation</p>
+          <p class="meta">Remote USA · Fit 86 · $114,400-$137,300</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|10|Torc Robotics|Software Engineer I - Metrics for Release Implementation" aria-label="Application decision for Torc Robotics Software Engineer I - Metrics for Release Implementation">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://job-boards.greenhouse.io/torcrobotics/jobs/8554811002" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#11</div>
+        <div class="role-main">
+          <h3>IXL Learning</h3>
+          <p class="title">Software Engineer, New Grad</p>
+          <p class="meta">Raleigh, NC · Fit 85 · not listed</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|11|IXL Learning|Software Engineer, New Grad" aria-label="Application decision for IXL Learning Software Engineer, New Grad">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://www.ixl.com/company/careers?gh_jid=8574195002" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#12</div>
+        <div class="role-main">
+          <h3>NVIDIA</h3>
+          <p class="title">Software Engineer, Hardware Tools and Methodology - New College Grad 2026</p>
+          <p class="meta">Santa Clara, CA · Fit 84 · $116,000-$189,750 L2; $136,000-$218,500 L3</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Manual verification; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|12|NVIDIA|Software Engineer, Hardware Tools and Methodology - New College Grad 2026" aria-label="Application decision for NVIDIA Software Engineer, Hardware Tools and Methodology - New College Grad 2026">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/Software-Engineer--Hardware-Tools-and-Methodology---New-College-Grad-2026_JR2018659" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#13</div>
+        <div class="role-main">
+          <h3>Slack / Salesforce</h3>
+          <p class="title">Software Engineer I - Service Network - Slack</p>
+          <p class="meta">Seattle, WA; San Francisco, CA · Fit 83 · $117,200-$194,200 depending market</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|13|Slack / Salesforce|Software Engineer I - Service Network - Slack" aria-label="Application decision for Slack / Salesforce Software Engineer I - Service Network - Slack">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://salesforce.wd12.myworkdayjobs.com/Slack/job/Washington---Seattle/Software-Engineer-I--Service-Network---Slack_JR342034" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#14</div>
+        <div class="role-main">
+          <h3>S&amp;C Electric Company</h3>
+          <p class="title">Software Engineer I</p>
+          <p class="meta">Chicago, IL · Fit 82 · not listed</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|14|S&amp;C Electric Company|Software Engineer I" aria-label="Application decision for S&amp;C Electric Company Software Engineer I">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://ejia.fa.us6.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/job/106730" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#15</div>
+        <div class="role-main">
+          <h3>Fortinet</h3>
+          <p class="title">Junior Software Developer</p>
+          <p class="meta">Santa Clara, CA · Fit 81 · not listed</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|15|Fortinet|Junior Software Developer" aria-label="Application decision for Fortinet Junior Software Developer">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://edel.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_2001/job/22744" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#16</div>
+        <div class="role-main">
+          <h3>Boston Dynamics</h3>
+          <p class="title">Full Stack Software Engineer, Atlas Applications</p>
+          <p class="meta">Waltham, MA · Fit 80 · not listed</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|16|Boston Dynamics|Full Stack Software Engineer, Atlas Applications" aria-label="Application decision for Boston Dynamics Full Stack Software Engineer, Atlas Applications">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://bostondynamics.wd1.myworkdayjobs.com/Boston_Dynamics/job/Waltham-MA/Full-Stack-Software-Engineer--Atlas-Applications_R2804" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#17</div>
+        <div class="role-main">
+          <h3>Nuro</h3>
+          <p class="title">Software Engineer New Grad - Performance</p>
+          <p class="meta">Mountain View, CA · Fit 79 · salary visible but not extracted</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Manual verification; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|17|Nuro|Software Engineer New Grad - Performance" aria-label="Application decision for Nuro Software Engineer New Grad - Performance">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://www.nuro.ai/careersitem?gh_jid=7978432" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#18</div>
+        <div class="role-main">
+          <h3>Boston Dynamics</h3>
+          <p class="title">Software Engineer in Test, Humanoid Robotics</p>
+          <p class="meta">Waltham, MA · Fit 78 · not listed</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|18|Boston Dynamics|Software Engineer in Test, Humanoid Robotics" aria-label="Application decision for Boston Dynamics Software Engineer in Test, Humanoid Robotics">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://bostondynamics.wd1.myworkdayjobs.com/Boston_Dynamics/job/Waltham-MA/Software-Quality-Automation-Engineer_R2777" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#19</div>
+        <div class="role-main">
+          <h3>True Anomaly</h3>
+          <p class="title">Software Engineer I, QA</p>
+          <p class="meta">Denver, CO; Long Beach, CA · Fit 76 · salary visible on page</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|19|True Anomaly|Software Engineer I, QA" aria-label="Application decision for True Anomaly Software Engineer I, QA">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://job-boards.greenhouse.io/trueanomalyinc/jobs/5152215007" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#20</div>
+        <div class="role-main">
+          <h3>CVS Health</h3>
+          <p class="title">Associate Software Development Engineer</p>
+          <p class="meta">Richardson, TX · Fit 75 · not listed</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|20|CVS Health|Associate Software Development Engineer" aria-label="Application decision for CVS Health Associate Software Development Engineer">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://cvshealth.wd1.myworkdayjobs.com/en-US/cvs_health_careers/job/TX---Richardson/Associate-Software-Development-Engineer_R0745817-1" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#21</div>
+        <div class="role-main">
+          <h3>Symbotic</h3>
+          <p class="title">New Grad - Software Engineer</p>
+          <p class="meta">Wilmington/Burlington, MA · Fit 74 · prior $96,000-$132,000</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Manual verification; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|21|Symbotic|New Grad - Software Engineer" aria-label="Application decision for Symbotic New Grad - Software Engineer">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://symbotic.wd504.myworkdayjobs.com/Symbotic/job/USA-Wilmington--MA---HQ/New-Grad--Software-Engineer_R6770" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#22</div>
+        <div class="role-main">
+          <h3>Amazon</h3>
+          <p class="title">Software Development Engineer - 2026 US</p>
+          <p class="meta">Seattle, WA · Fit 73 · not listed</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Manual verification; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|22|Amazon|Software Development Engineer - 2026 US" aria-label="Application decision for Amazon Software Development Engineer - 2026 US">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://www.amazon.jobs/en/jobs/3177934/software-development-engineer-2026-us" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#23</div>
+        <div class="role-main">
+          <h3>Google</h3>
+          <p class="title">Software Engineer II, Early Career</p>
+          <p class="meta">12 US locations · Fit 71 · not checked</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|23|Google|Software Engineer II, Early Career" aria-label="Application decision for Google Software Engineer II, Early Career">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://www.google.com/about/careers/applications/jobs/results/143333237156913862-software-engineer-ii/" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#24</div>
+        <div class="role-main">
+          <h3>DoorDash</h3>
+          <p class="title">Software Engineer I - Entry Level</p>
+          <p class="meta">NYC; SF; LA; Seattle; Sunnyvale · Fit 70 · not checked</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|24|DoorDash|Software Engineer I - Entry Level" aria-label="Application decision for DoorDash Software Engineer I - Entry Level">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://careersatdoordash.com/job-search/" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#25</div>
+        <div class="role-main">
+          <h3>NVIDIA</h3>
+          <p class="title">Deep Learning Software Engineer, FlashInfer - New College Grad 2026</p>
+          <p class="meta">Santa Clara, CA · Fit 70 · not checked</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|25|NVIDIA|Deep Learning Software Engineer, FlashInfer - New College Grad 2026" aria-label="Application decision for NVIDIA Deep Learning Software Engineer, FlashInfer - New College Grad 2026">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/Deep-Learning-Software-Engineer--FlashInfer---New-College-Grad-2026_JR2017076" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#26</div>
+        <div class="role-main">
+          <h3>Ramp</h3>
+          <p class="title">University Grad Software Engineer - Frontend</p>
+          <p class="meta">New York, NY · Fit 69 · not checked</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|26|Ramp|University Grad Software Engineer - Frontend" aria-label="Application decision for Ramp University Grad Software Engineer - Frontend">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://jobs.ashbyhq.com/ramp/a1229aec-1105-4c47-8533-b912e732ed89" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#27</div>
+        <div class="role-main">
+          <h3>N1</h3>
+          <p class="title">New Grad Software Engineer - Backend Rust</p>
+          <p class="meta">NYC / Remote US / SF Bay Area · Fit 69 · $120,000-$260,000 base</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Manual verification; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|27|N1|New Grad Software Engineer - Backend Rust" aria-label="Application decision for N1 New Grad Software Engineer - Backend Rust">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://jobs.ashbyhq.com/n1/a3e25c84-0846-454a-b2fc-a356c2a713bd/application" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#28</div>
+        <div class="role-main">
+          <h3>ServiceNow / Moveworks</h3>
+          <p class="title">Associate SWE, Search Infrastructure</p>
+          <p class="meta">Mountain View, CA · Fit 68 · prior tracked</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Manual verification; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|28|ServiceNow / Moveworks|Associate SWE, Search Infrastructure" aria-label="Application decision for ServiceNow / Moveworks Associate SWE, Search Infrastructure">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://jobs.smartrecruiters.com/ServiceNow/99c06c61-284f-4c2b-bd4d-1a7b53bf3fa4" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#29</div>
+        <div class="role-main">
+          <h3>Sigma Computing</h3>
+          <p class="title">Software Engineer New Grad</p>
+          <p class="meta">San Francisco, CA; New York, NY · Fit 68 · not checked</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|29|Sigma Computing|Software Engineer New Grad" aria-label="Application decision for Sigma Computing Software Engineer New Grad">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://job-boards.greenhouse.io/sigmacomputing/jobs/7690411003" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#30</div>
+        <div class="role-main">
+          <h3>Lightfield</h3>
+          <p class="title">AI Product Engineer - New Grad</p>
+          <p class="meta">San Francisco, CA · Fit 67 · not checked</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|30|Lightfield|AI Product Engineer - New Grad" aria-label="Application decision for Lightfield AI Product Engineer - New Grad">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://jobs.ashbyhq.com/Lightfield/bb758825-5422-46c4-86c3-0be1cc89148f/application" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+      </section>
+    
+      
+      <section class="lane">
+        <div class="lane-head">
+          <h2>Research Queue</h2>
+          <span>0</span>
+        </div>
+        <p class="empty">No research-only roles in this run.</p>
+      </section>
+    
+      
+      <section class="lane">
+        <div class="lane-head">
+          <h2>Stale / Removed</h2>
+          <span>0</span>
+        </div>
+        <p class="empty">No stale roles detected in this run.</p>
+      </section>
+    
+      
+      <section class="lane">
+        <div class="lane-head">
+          <h2>All Top Roles</h2>
+          <span>30</span>
+        </div>
+        
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#1</div>
+        <div class="role-main">
+          <h3>Giga</h3>
+          <p class="title">Software Engineer (New Grads)</p>
+          <p class="meta">New York, NY; San Francisco, CA · Fit 96 · $160,000-$250,000 + equity</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|1|Giga|Software Engineer (New Grads)" aria-label="Application decision for Giga Software Engineer (New Grads)">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://jobs.ashbyhq.com/gigaml/7314c5c1-e3d0-4439-ad9f-b3b09d4dde51/application" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#2</div>
+        <div class="role-main">
+          <h3>Eventual</h3>
+          <p class="title">Software Engineer, New Grad</p>
+          <p class="meta">San Francisco, CA · Fit 94 · $120,000-$150,000 + equity</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|2|Eventual|Software Engineer, New Grad" aria-label="Application decision for Eventual Software Engineer, New Grad">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://jobs.ashbyhq.com/eventualcomputing/becb5675-3480-4d2b-b126-2acad40fd088/application" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#3</div>
+        <div class="role-main">
+          <h3>Julius AI</h3>
+          <p class="title">Software Engineer - Product (New Grad)</p>
+          <p class="meta">San Francisco, CA · Fit 93 · $130,000-$150,000/year</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|3|Julius AI|Software Engineer - Product (New Grad)" aria-label="Application decision for Julius AI Software Engineer - Product (New Grad)">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://jobs.ashbyhq.com/julius/5e0b677a-f677-44de-93c6-f7848ab5a8e6/application" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#4</div>
+        <div class="role-main">
+          <h3>Glean</h3>
+          <p class="title">Software Engineer, University Grad</p>
+          <p class="meta">Mountain View, CA · Fit 92 · $150,000-$160,000/year</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|4|Glean|Software Engineer, University Grad" aria-label="Application decision for Glean Software Engineer, University Grad">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://job-boards.greenhouse.io/gleanwork/jobs/4592324005" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#5</div>
+        <div class="role-main">
+          <h3>Loop</h3>
+          <p class="title">2026 New Grad | Software Engineer, Full-Stack (Chicago)</p>
+          <p class="meta">Chicago, IL · Fit 91 · $125,000 annual base</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|5|Loop|2026 New Grad | Software Engineer, Full-Stack (Chicago)" aria-label="Application decision for Loop 2026 New Grad | Software Engineer, Full-Stack (Chicago)">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://job-boards.greenhouse.io/loop/jobs/5981831004" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#6</div>
+        <div class="role-main">
+          <h3>Quince</h3>
+          <p class="title">Software Development Engineer [New Grad]</p>
+          <p class="meta">Palo Alto, CA · Fit 90 · $125,000-$135,000 base + bonus/equity</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|6|Quince|Software Development Engineer [New Grad]" aria-label="Application decision for Quince Software Development Engineer [New Grad]">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://job-boards.greenhouse.io/quince/jobs/5226786008" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#7</div>
+        <div class="role-main">
+          <h3>IXL Learning</h3>
+          <p class="title">Software Engineer, New Grad</p>
+          <p class="meta">San Mateo, CA · Fit 89 · $110,000-$135,000 + equity + benefits</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|7|IXL Learning|Software Engineer, New Grad" aria-label="Application decision for IXL Learning Software Engineer, New Grad">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://www.ixl.com/company/careers?gh_jid=8574194002" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#8</div>
+        <div class="role-main">
+          <h3>Pinterest</h3>
+          <p class="title">Software Engineer I, Backend</p>
+          <p class="meta">Seattle, WA; California · Fit 88 · pay transparency visible on direct page; range not extracted</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|8|Pinterest|Software Engineer I, Backend" aria-label="Application decision for Pinterest Software Engineer I, Backend">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://www.pinterestcareers.com/jobs/6816337/software-engineer-i-backend/" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#9</div>
+        <div class="role-main">
+          <h3>Compa</h3>
+          <p class="title">Software Engineer, New Grad</p>
+          <p class="meta">Denver, CO · Fit 87 · $90,000-$120,000/year</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|9|Compa|Software Engineer, New Grad" aria-label="Application decision for Compa Software Engineer, New Grad">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://jobs.ashbyhq.com/compa/ce7b36cc-3517-46c0-98fe-99924ab400da/application" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#10</div>
+        <div class="role-main">
+          <h3>Torc Robotics</h3>
+          <p class="title">Software Engineer I - Metrics for Release Implementation</p>
+          <p class="meta">Remote USA · Fit 86 · $114,400-$137,300</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Application questions; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|10|Torc Robotics|Software Engineer I - Metrics for Release Implementation" aria-label="Application decision for Torc Robotics Software Engineer I - Metrics for Release Implementation">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://job-boards.greenhouse.io/torcrobotics/jobs/8554811002" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#11</div>
+        <div class="role-main">
+          <h3>IXL Learning</h3>
+          <p class="title">Software Engineer, New Grad</p>
+          <p class="meta">Raleigh, NC · Fit 85 · not listed</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|11|IXL Learning|Software Engineer, New Grad" aria-label="Application decision for IXL Learning Software Engineer, New Grad">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://www.ixl.com/company/careers?gh_jid=8574195002" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#12</div>
+        <div class="role-main">
+          <h3>NVIDIA</h3>
+          <p class="title">Software Engineer, Hardware Tools and Methodology - New College Grad 2026</p>
+          <p class="meta">Santa Clara, CA · Fit 84 · $116,000-$189,750 L2; $136,000-$218,500 L3</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Manual verification; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|12|NVIDIA|Software Engineer, Hardware Tools and Methodology - New College Grad 2026" aria-label="Application decision for NVIDIA Software Engineer, Hardware Tools and Methodology - New College Grad 2026">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/Software-Engineer--Hardware-Tools-and-Methodology---New-College-Grad-2026_JR2018659" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#13</div>
+        <div class="role-main">
+          <h3>Slack / Salesforce</h3>
+          <p class="title">Software Engineer I - Service Network - Slack</p>
+          <p class="meta">Seattle, WA; San Francisco, CA · Fit 83 · $117,200-$194,200 depending market</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|13|Slack / Salesforce|Software Engineer I - Service Network - Slack" aria-label="Application decision for Slack / Salesforce Software Engineer I - Service Network - Slack">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://salesforce.wd12.myworkdayjobs.com/Slack/job/Washington---Seattle/Software-Engineer-I--Service-Network---Slack_JR342034" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#14</div>
+        <div class="role-main">
+          <h3>S&amp;C Electric Company</h3>
+          <p class="title">Software Engineer I</p>
+          <p class="meta">Chicago, IL · Fit 82 · not listed</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|14|S&amp;C Electric Company|Software Engineer I" aria-label="Application decision for S&amp;C Electric Company Software Engineer I">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://ejia.fa.us6.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/job/106730" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#15</div>
+        <div class="role-main">
+          <h3>Fortinet</h3>
+          <p class="title">Junior Software Developer</p>
+          <p class="meta">Santa Clara, CA · Fit 81 · not listed</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|15|Fortinet|Junior Software Developer" aria-label="Application decision for Fortinet Junior Software Developer">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://edel.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_2001/job/22744" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#16</div>
+        <div class="role-main">
+          <h3>Boston Dynamics</h3>
+          <p class="title">Full Stack Software Engineer, Atlas Applications</p>
+          <p class="meta">Waltham, MA · Fit 80 · not listed</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|16|Boston Dynamics|Full Stack Software Engineer, Atlas Applications" aria-label="Application decision for Boston Dynamics Full Stack Software Engineer, Atlas Applications">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://bostondynamics.wd1.myworkdayjobs.com/Boston_Dynamics/job/Waltham-MA/Full-Stack-Software-Engineer--Atlas-Applications_R2804" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#17</div>
+        <div class="role-main">
+          <h3>Nuro</h3>
+          <p class="title">Software Engineer New Grad - Performance</p>
+          <p class="meta">Mountain View, CA · Fit 79 · salary visible but not extracted</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Manual verification; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|17|Nuro|Software Engineer New Grad - Performance" aria-label="Application decision for Nuro Software Engineer New Grad - Performance">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://www.nuro.ai/careersitem?gh_jid=7978432" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#18</div>
+        <div class="role-main">
+          <h3>Boston Dynamics</h3>
+          <p class="title">Software Engineer in Test, Humanoid Robotics</p>
+          <p class="meta">Waltham, MA · Fit 78 · not listed</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|18|Boston Dynamics|Software Engineer in Test, Humanoid Robotics" aria-label="Application decision for Boston Dynamics Software Engineer in Test, Humanoid Robotics">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://bostondynamics.wd1.myworkdayjobs.com/Boston_Dynamics/job/Waltham-MA/Software-Quality-Automation-Engineer_R2777" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#19</div>
+        <div class="role-main">
+          <h3>True Anomaly</h3>
+          <p class="title">Software Engineer I, QA</p>
+          <p class="meta">Denver, CO; Long Beach, CA · Fit 76 · salary visible on page</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|19|True Anomaly|Software Engineer I, QA" aria-label="Application decision for True Anomaly Software Engineer I, QA">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://job-boards.greenhouse.io/trueanomalyinc/jobs/5152215007" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#20</div>
+        <div class="role-main">
+          <h3>CVS Health</h3>
+          <p class="title">Associate Software Development Engineer</p>
+          <p class="meta">Richardson, TX · Fit 75 · not listed</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|20|CVS Health|Associate Software Development Engineer" aria-label="Application decision for CVS Health Associate Software Development Engineer">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://cvshealth.wd1.myworkdayjobs.com/en-US/cvs_health_careers/job/TX---Richardson/Associate-Software-Development-Engineer_R0745817-1" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#21</div>
+        <div class="role-main">
+          <h3>Symbotic</h3>
+          <p class="title">New Grad - Software Engineer</p>
+          <p class="meta">Wilmington/Burlington, MA · Fit 74 · prior $96,000-$132,000</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Manual verification; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|21|Symbotic|New Grad - Software Engineer" aria-label="Application decision for Symbotic New Grad - Software Engineer">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://symbotic.wd504.myworkdayjobs.com/Symbotic/job/USA-Wilmington--MA---HQ/New-Grad--Software-Engineer_R6770" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#22</div>
+        <div class="role-main">
+          <h3>Amazon</h3>
+          <p class="title">Software Development Engineer - 2026 US</p>
+          <p class="meta">Seattle, WA · Fit 73 · not listed</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Manual verification; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|22|Amazon|Software Development Engineer - 2026 US" aria-label="Application decision for Amazon Software Development Engineer - 2026 US">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://www.amazon.jobs/en/jobs/3177934/software-development-engineer-2026-us" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#23</div>
+        <div class="role-main">
+          <h3>Google</h3>
+          <p class="title">Software Engineer II, Early Career</p>
+          <p class="meta">12 US locations · Fit 71 · not checked</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|23|Google|Software Engineer II, Early Career" aria-label="Application decision for Google Software Engineer II, Early Career">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://www.google.com/about/careers/applications/jobs/results/143333237156913862-software-engineer-ii/" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#24</div>
+        <div class="role-main">
+          <h3>DoorDash</h3>
+          <p class="title">Software Engineer I - Entry Level</p>
+          <p class="meta">NYC; SF; LA; Seattle; Sunnyvale · Fit 70 · not checked</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|24|DoorDash|Software Engineer I - Entry Level" aria-label="Application decision for DoorDash Software Engineer I - Entry Level">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://careersatdoordash.com/job-search/" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#25</div>
+        <div class="role-main">
+          <h3>NVIDIA</h3>
+          <p class="title">Deep Learning Software Engineer, FlashInfer - New College Grad 2026</p>
+          <p class="meta">Santa Clara, CA · Fit 70 · not checked</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|25|NVIDIA|Deep Learning Software Engineer, FlashInfer - New College Grad 2026" aria-label="Application decision for NVIDIA Deep Learning Software Engineer, FlashInfer - New College Grad 2026">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/Deep-Learning-Software-Engineer--FlashInfer---New-College-Grad-2026_JR2017076" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#26</div>
+        <div class="role-main">
+          <h3>Ramp</h3>
+          <p class="title">University Grad Software Engineer - Frontend</p>
+          <p class="meta">New York, NY · Fit 69 · not checked</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|26|Ramp|University Grad Software Engineer - Frontend" aria-label="Application decision for Ramp University Grad Software Engineer - Frontend">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://jobs.ashbyhq.com/ramp/a1229aec-1105-4c47-8533-b912e732ed89" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#27</div>
+        <div class="role-main">
+          <h3>N1</h3>
+          <p class="title">New Grad Software Engineer - Backend Rust</p>
+          <p class="meta">NYC / Remote US / SF Bay Area · Fit 69 · $120,000-$260,000 base</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Manual verification; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|27|N1|New Grad Software Engineer - Backend Rust" aria-label="Application decision for N1 New Grad Software Engineer - Backend Rust">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://jobs.ashbyhq.com/n1/a3e25c84-0846-454a-b2fc-a356c2a713bd/application" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#28</div>
+        <div class="role-main">
+          <h3>ServiceNow / Moveworks</h3>
+          <p class="title">Associate SWE, Search Infrastructure</p>
+          <p class="meta">Mountain View, CA · Fit 68 · prior tracked</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: Manual verification; open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|28|ServiceNow / Moveworks|Associate SWE, Search Infrastructure" aria-label="Application decision for ServiceNow / Moveworks Associate SWE, Search Infrastructure">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://jobs.smartrecruiters.com/ServiceNow/99c06c61-284f-4c2b-bd4d-1a7b53bf3fa4" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#29</div>
+        <div class="role-main">
+          <h3>Sigma Computing</h3>
+          <p class="title">Software Engineer New Grad</p>
+          <p class="meta">San Francisco, CA; New York, NY · Fit 68 · not checked</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|29|Sigma Computing|Software Engineer New Grad" aria-label="Application decision for Sigma Computing Software Engineer New Grad">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://job-boards.greenhouse.io/sigmacomputing/jobs/7690411003" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+
+      <article class="role-card" data-status="direct_detail_verified_manual_review">
+        <div class="rank">#30</div>
+        <div class="role-main">
+          <h3>Lightfield</h3>
+          <p class="title">AI Product Engineer - New Grad</p>
+          <p class="meta">San Francisco, CA · Fit 67 · not checked</p>
+          <p class="status">Review required before applying</p>
+          <p class="manual">Check: open and confirm application page</p>
+        </div>
+        <div class="actions">
+          
+          <div class="decision-controls" data-decision-controls data-role-key="2026-06-07|30|Lightfield|AI Product Engineer - New Grad" aria-label="Application decision for Lightfield AI Product Engineer - New Grad">
+            <button type="button" data-decision-choice="applied">Applied</button>
+            <button type="button" data-decision-choice="not_applied">Not Applied</button>
+            <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+          </div>
+    
+          <a class="btn secondary" href="https://jobs.ashbyhq.com/Lightfield/bb758825-5422-46c4-86c3-0be1cc89148f/application" target="_blank" rel="noreferrer">Review Link</a>
+          
+          
+          
+          
+          
+        </div>
+      </article>
+    
+      </section>
+    
+    </section>
+  </main>
+  <script>
+    window.JOB_SCOUT_MANIFEST = {"latest_run_date": "2026-06-07", "runs": [{"data_path": "data/runs/2026-06-07.json", "generated_at": "2026-06-07T20:22:27-04:00", "manual_review": 30, "open_apply": 0, "research": 0, "run_date": "2026-06-07", "run_id": "job-scout-dashboard-2026-06-07T202227", "stale": 0, "total_roles": 30}]};
+    window.JOB_SCOUT_RUNS = {"2026-06-07": {"easy_apply": [], "generated_at": "2026-06-07T20:22:27-04:00", "jobs": [{"application_pack_url": "", "apply_url": "https://jobs.ashbyhq.com/gigaml/7314c5c1-e3d0-4439-ad9f-b3b09d4dde51/application", "company": "Giga", "evidence_url": "", "fit_score": 96, "location": "New York, NY; San Francisco, CA", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 1, "role_key": "2026-06-07|1|Giga|Software Engineer (New Grads)", "salary": "$160,000-$250,000 + equity", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer (New Grads)", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://jobs.ashbyhq.com/eventualcomputing/becb5675-3480-4d2b-b126-2acad40fd088/application", "company": "Eventual", "evidence_url": "", "fit_score": 94, "location": "San Francisco, CA", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 2, "role_key": "2026-06-07|2|Eventual|Software Engineer, New Grad", "salary": "$120,000-$150,000 + equity", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer, New Grad", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://jobs.ashbyhq.com/julius/5e0b677a-f677-44de-93c6-f7848ab5a8e6/application", "company": "Julius AI", "evidence_url": "", "fit_score": 93, "location": "San Francisco, CA", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 3, "role_key": "2026-06-07|3|Julius AI|Software Engineer - Product (New Grad)", "salary": "$130,000-$150,000/year", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer - Product (New Grad)", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://job-boards.greenhouse.io/gleanwork/jobs/4592324005", "company": "Glean", "evidence_url": "", "fit_score": 92, "location": "Mountain View, CA", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 4, "role_key": "2026-06-07|4|Glean|Software Engineer, University Grad", "salary": "$150,000-$160,000/year", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer, University Grad", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://job-boards.greenhouse.io/loop/jobs/5981831004", "company": "Loop", "evidence_url": "", "fit_score": 91, "location": "Chicago, IL", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 5, "role_key": "2026-06-07|5|Loop|2026 New Grad | Software Engineer, Full-Stack (Chicago)", "salary": "$125,000 annual base", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "2026 New Grad | Software Engineer, Full-Stack (Chicago)", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://job-boards.greenhouse.io/quince/jobs/5226786008", "company": "Quince", "evidence_url": "", "fit_score": 90, "location": "Palo Alto, CA", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 6, "role_key": "2026-06-07|6|Quince|Software Development Engineer [New Grad]", "salary": "$125,000-$135,000 base + bonus/equity", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Development Engineer [New Grad]", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://www.ixl.com/company/careers?gh_jid=8574194002", "company": "IXL Learning", "evidence_url": "", "fit_score": 89, "location": "San Mateo, CA", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 7, "role_key": "2026-06-07|7|IXL Learning|Software Engineer, New Grad", "salary": "$110,000-$135,000 + equity + benefits", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer, New Grad", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://www.pinterestcareers.com/jobs/6816337/software-engineer-i-backend/", "company": "Pinterest", "evidence_url": "", "fit_score": 88, "location": "Seattle, WA; California", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 8, "role_key": "2026-06-07|8|Pinterest|Software Engineer I, Backend", "salary": "pay transparency visible on direct page; range not extracted", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer I, Backend", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://jobs.ashbyhq.com/compa/ce7b36cc-3517-46c0-98fe-99924ab400da/application", "company": "Compa", "evidence_url": "", "fit_score": 87, "location": "Denver, CO", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 9, "role_key": "2026-06-07|9|Compa|Software Engineer, New Grad", "salary": "$90,000-$120,000/year", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer, New Grad", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://job-boards.greenhouse.io/torcrobotics/jobs/8554811002", "company": "Torc Robotics", "evidence_url": "", "fit_score": 86, "location": "Remote USA", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 10, "role_key": "2026-06-07|10|Torc Robotics|Software Engineer I - Metrics for Release Implementation", "salary": "$114,400-$137,300", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer I - Metrics for Release Implementation", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://www.ixl.com/company/careers?gh_jid=8574195002", "company": "IXL Learning", "evidence_url": "", "fit_score": 85, "location": "Raleigh, NC", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 11, "role_key": "2026-06-07|11|IXL Learning|Software Engineer, New Grad", "salary": "not listed", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer, New Grad", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/Software-Engineer--Hardware-Tools-and-Methodology---New-College-Grad-2026_JR2018659", "company": "NVIDIA", "evidence_url": "", "fit_score": 84, "location": "Santa Clara, CA", "manual_fields": ["manual verification", "link/manual review"], "manual_text": "Check: Manual verification; open and confirm application page", "rank": 12, "role_key": "2026-06-07|12|NVIDIA|Software Engineer, Hardware Tools and Methodology - New College Grad 2026", "salary": "$116,000-$189,750 L2; $136,000-$218,500 L3", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer, Hardware Tools and Methodology - New College Grad 2026", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://salesforce.wd12.myworkdayjobs.com/Slack/job/Washington---Seattle/Software-Engineer-I--Service-Network---Slack_JR342034", "company": "Slack / Salesforce", "evidence_url": "", "fit_score": 83, "location": "Seattle, WA; San Francisco, CA", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 13, "role_key": "2026-06-07|13|Slack / Salesforce|Software Engineer I - Service Network - Slack", "salary": "$117,200-$194,200 depending market", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer I - Service Network - Slack", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://ejia.fa.us6.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/job/106730", "company": "S&C Electric Company", "evidence_url": "", "fit_score": 82, "location": "Chicago, IL", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 14, "role_key": "2026-06-07|14|S&C Electric Company|Software Engineer I", "salary": "not listed", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer I", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://edel.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_2001/job/22744", "company": "Fortinet", "evidence_url": "", "fit_score": 81, "location": "Santa Clara, CA", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 15, "role_key": "2026-06-07|15|Fortinet|Junior Software Developer", "salary": "not listed", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Junior Software Developer", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://bostondynamics.wd1.myworkdayjobs.com/Boston_Dynamics/job/Waltham-MA/Full-Stack-Software-Engineer--Atlas-Applications_R2804", "company": "Boston Dynamics", "evidence_url": "", "fit_score": 80, "location": "Waltham, MA", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 16, "role_key": "2026-06-07|16|Boston Dynamics|Full Stack Software Engineer, Atlas Applications", "salary": "not listed", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Full Stack Software Engineer, Atlas Applications", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://www.nuro.ai/careersitem?gh_jid=7978432", "company": "Nuro", "evidence_url": "", "fit_score": 79, "location": "Mountain View, CA", "manual_fields": ["manual verification", "link/manual review"], "manual_text": "Check: Manual verification; open and confirm application page", "rank": 17, "role_key": "2026-06-07|17|Nuro|Software Engineer New Grad - Performance", "salary": "salary visible but not extracted", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer New Grad - Performance", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://bostondynamics.wd1.myworkdayjobs.com/Boston_Dynamics/job/Waltham-MA/Software-Quality-Automation-Engineer_R2777", "company": "Boston Dynamics", "evidence_url": "", "fit_score": 78, "location": "Waltham, MA", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 18, "role_key": "2026-06-07|18|Boston Dynamics|Software Engineer in Test, Humanoid Robotics", "salary": "not listed", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer in Test, Humanoid Robotics", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://job-boards.greenhouse.io/trueanomalyinc/jobs/5152215007", "company": "True Anomaly", "evidence_url": "", "fit_score": 76, "location": "Denver, CO; Long Beach, CA", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 19, "role_key": "2026-06-07|19|True Anomaly|Software Engineer I, QA", "salary": "salary visible on page", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer I, QA", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://cvshealth.wd1.myworkdayjobs.com/en-US/cvs_health_careers/job/TX---Richardson/Associate-Software-Development-Engineer_R0745817-1", "company": "CVS Health", "evidence_url": "", "fit_score": 75, "location": "Richardson, TX", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 20, "role_key": "2026-06-07|20|CVS Health|Associate Software Development Engineer", "salary": "not listed", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Associate Software Development Engineer", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://symbotic.wd504.myworkdayjobs.com/Symbotic/job/USA-Wilmington--MA---HQ/New-Grad--Software-Engineer_R6770", "company": "Symbotic", "evidence_url": "", "fit_score": 74, "location": "Wilmington/Burlington, MA", "manual_fields": ["manual verification", "link/manual review"], "manual_text": "Check: Manual verification; open and confirm application page", "rank": 21, "role_key": "2026-06-07|21|Symbotic|New Grad - Software Engineer", "salary": "prior $96,000-$132,000", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "New Grad - Software Engineer", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://www.amazon.jobs/en/jobs/3177934/software-development-engineer-2026-us", "company": "Amazon", "evidence_url": "", "fit_score": 73, "location": "Seattle, WA", "manual_fields": ["manual verification", "link/manual review"], "manual_text": "Check: Manual verification; open and confirm application page", "rank": 22, "role_key": "2026-06-07|22|Amazon|Software Development Engineer - 2026 US", "salary": "not listed", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Development Engineer - 2026 US", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://www.google.com/about/careers/applications/jobs/results/143333237156913862-software-engineer-ii/", "company": "Google", "evidence_url": "", "fit_score": 71, "location": "12 US locations", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 23, "role_key": "2026-06-07|23|Google|Software Engineer II, Early Career", "salary": "not checked", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer II, Early Career", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://careersatdoordash.com/job-search/", "company": "DoorDash", "evidence_url": "", "fit_score": 70, "location": "NYC; SF; LA; Seattle; Sunnyvale", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 24, "role_key": "2026-06-07|24|DoorDash|Software Engineer I - Entry Level", "salary": "not checked", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer I - Entry Level", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/Deep-Learning-Software-Engineer--FlashInfer---New-College-Grad-2026_JR2017076", "company": "NVIDIA", "evidence_url": "", "fit_score": 70, "location": "Santa Clara, CA", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 25, "role_key": "2026-06-07|25|NVIDIA|Deep Learning Software Engineer, FlashInfer - New College Grad 2026", "salary": "not checked", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Deep Learning Software Engineer, FlashInfer - New College Grad 2026", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://jobs.ashbyhq.com/ramp/a1229aec-1105-4c47-8533-b912e732ed89", "company": "Ramp", "evidence_url": "", "fit_score": 69, "location": "New York, NY", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 26, "role_key": "2026-06-07|26|Ramp|University Grad Software Engineer - Frontend", "salary": "not checked", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "University Grad Software Engineer - Frontend", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://jobs.ashbyhq.com/n1/a3e25c84-0846-454a-b2fc-a356c2a713bd/application", "company": "N1", "evidence_url": "", "fit_score": 69, "location": "NYC / Remote US / SF Bay Area", "manual_fields": ["manual verification", "link/manual review"], "manual_text": "Check: Manual verification; open and confirm application page", "rank": 27, "role_key": "2026-06-07|27|N1|New Grad Software Engineer - Backend Rust", "salary": "$120,000-$260,000 base", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "New Grad Software Engineer - Backend Rust", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://jobs.smartrecruiters.com/ServiceNow/99c06c61-284f-4c2b-bd4d-1a7b53bf3fa4", "company": "ServiceNow / Moveworks", "evidence_url": "", "fit_score": 68, "location": "Mountain View, CA", "manual_fields": ["manual verification", "link/manual review"], "manual_text": "Check: Manual verification; open and confirm application page", "rank": 28, "role_key": "2026-06-07|28|ServiceNow / Moveworks|Associate SWE, Search Infrastructure", "salary": "prior tracked", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Associate SWE, Search Infrastructure", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://job-boards.greenhouse.io/sigmacomputing/jobs/7690411003", "company": "Sigma Computing", "evidence_url": "", "fit_score": 68, "location": "San Francisco, CA; New York, NY", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 29, "role_key": "2026-06-07|29|Sigma Computing|Software Engineer New Grad", "salary": "not checked", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer New Grad", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://jobs.ashbyhq.com/Lightfield/bb758825-5422-46c4-86c3-0be1cc89148f/application", "company": "Lightfield", "evidence_url": "", "fit_score": 67, "location": "San Francisco, CA", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 30, "role_key": "2026-06-07|30|Lightfield|AI Product Engineer - New Grad", "salary": "not checked", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "AI Product Engineer - New Grad", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}], "manual_review": [{"application_pack_url": "", "apply_url": "https://jobs.ashbyhq.com/gigaml/7314c5c1-e3d0-4439-ad9f-b3b09d4dde51/application", "company": "Giga", "evidence_url": "", "fit_score": 96, "location": "New York, NY; San Francisco, CA", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 1, "role_key": "2026-06-07|1|Giga|Software Engineer (New Grads)", "salary": "$160,000-$250,000 + equity", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer (New Grads)", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://jobs.ashbyhq.com/eventualcomputing/becb5675-3480-4d2b-b126-2acad40fd088/application", "company": "Eventual", "evidence_url": "", "fit_score": 94, "location": "San Francisco, CA", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 2, "role_key": "2026-06-07|2|Eventual|Software Engineer, New Grad", "salary": "$120,000-$150,000 + equity", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer, New Grad", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://jobs.ashbyhq.com/julius/5e0b677a-f677-44de-93c6-f7848ab5a8e6/application", "company": "Julius AI", "evidence_url": "", "fit_score": 93, "location": "San Francisco, CA", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 3, "role_key": "2026-06-07|3|Julius AI|Software Engineer - Product (New Grad)", "salary": "$130,000-$150,000/year", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer - Product (New Grad)", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://job-boards.greenhouse.io/gleanwork/jobs/4592324005", "company": "Glean", "evidence_url": "", "fit_score": 92, "location": "Mountain View, CA", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 4, "role_key": "2026-06-07|4|Glean|Software Engineer, University Grad", "salary": "$150,000-$160,000/year", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer, University Grad", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://job-boards.greenhouse.io/loop/jobs/5981831004", "company": "Loop", "evidence_url": "", "fit_score": 91, "location": "Chicago, IL", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 5, "role_key": "2026-06-07|5|Loop|2026 New Grad | Software Engineer, Full-Stack (Chicago)", "salary": "$125,000 annual base", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "2026 New Grad | Software Engineer, Full-Stack (Chicago)", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://job-boards.greenhouse.io/quince/jobs/5226786008", "company": "Quince", "evidence_url": "", "fit_score": 90, "location": "Palo Alto, CA", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 6, "role_key": "2026-06-07|6|Quince|Software Development Engineer [New Grad]", "salary": "$125,000-$135,000 base + bonus/equity", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Development Engineer [New Grad]", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://www.ixl.com/company/careers?gh_jid=8574194002", "company": "IXL Learning", "evidence_url": "", "fit_score": 89, "location": "San Mateo, CA", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 7, "role_key": "2026-06-07|7|IXL Learning|Software Engineer, New Grad", "salary": "$110,000-$135,000 + equity + benefits", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer, New Grad", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://www.pinterestcareers.com/jobs/6816337/software-engineer-i-backend/", "company": "Pinterest", "evidence_url": "", "fit_score": 88, "location": "Seattle, WA; California", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 8, "role_key": "2026-06-07|8|Pinterest|Software Engineer I, Backend", "salary": "pay transparency visible on direct page; range not extracted", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer I, Backend", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://jobs.ashbyhq.com/compa/ce7b36cc-3517-46c0-98fe-99924ab400da/application", "company": "Compa", "evidence_url": "", "fit_score": 87, "location": "Denver, CO", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 9, "role_key": "2026-06-07|9|Compa|Software Engineer, New Grad", "salary": "$90,000-$120,000/year", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer, New Grad", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://job-boards.greenhouse.io/torcrobotics/jobs/8554811002", "company": "Torc Robotics", "evidence_url": "", "fit_score": 86, "location": "Remote USA", "manual_fields": ["application questions", "link/manual review"], "manual_text": "Check: Application questions; open and confirm application page", "rank": 10, "role_key": "2026-06-07|10|Torc Robotics|Software Engineer I - Metrics for Release Implementation", "salary": "$114,400-$137,300", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer I - Metrics for Release Implementation", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://www.ixl.com/company/careers?gh_jid=8574195002", "company": "IXL Learning", "evidence_url": "", "fit_score": 85, "location": "Raleigh, NC", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 11, "role_key": "2026-06-07|11|IXL Learning|Software Engineer, New Grad", "salary": "not listed", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer, New Grad", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/Software-Engineer--Hardware-Tools-and-Methodology---New-College-Grad-2026_JR2018659", "company": "NVIDIA", "evidence_url": "", "fit_score": 84, "location": "Santa Clara, CA", "manual_fields": ["manual verification", "link/manual review"], "manual_text": "Check: Manual verification; open and confirm application page", "rank": 12, "role_key": "2026-06-07|12|NVIDIA|Software Engineer, Hardware Tools and Methodology - New College Grad 2026", "salary": "$116,000-$189,750 L2; $136,000-$218,500 L3", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer, Hardware Tools and Methodology - New College Grad 2026", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://salesforce.wd12.myworkdayjobs.com/Slack/job/Washington---Seattle/Software-Engineer-I--Service-Network---Slack_JR342034", "company": "Slack / Salesforce", "evidence_url": "", "fit_score": 83, "location": "Seattle, WA; San Francisco, CA", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 13, "role_key": "2026-06-07|13|Slack / Salesforce|Software Engineer I - Service Network - Slack", "salary": "$117,200-$194,200 depending market", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer I - Service Network - Slack", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://ejia.fa.us6.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1001/job/106730", "company": "S&C Electric Company", "evidence_url": "", "fit_score": 82, "location": "Chicago, IL", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 14, "role_key": "2026-06-07|14|S&C Electric Company|Software Engineer I", "salary": "not listed", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer I", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://edel.fa.us2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_2001/job/22744", "company": "Fortinet", "evidence_url": "", "fit_score": 81, "location": "Santa Clara, CA", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 15, "role_key": "2026-06-07|15|Fortinet|Junior Software Developer", "salary": "not listed", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Junior Software Developer", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://bostondynamics.wd1.myworkdayjobs.com/Boston_Dynamics/job/Waltham-MA/Full-Stack-Software-Engineer--Atlas-Applications_R2804", "company": "Boston Dynamics", "evidence_url": "", "fit_score": 80, "location": "Waltham, MA", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 16, "role_key": "2026-06-07|16|Boston Dynamics|Full Stack Software Engineer, Atlas Applications", "salary": "not listed", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Full Stack Software Engineer, Atlas Applications", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://www.nuro.ai/careersitem?gh_jid=7978432", "company": "Nuro", "evidence_url": "", "fit_score": 79, "location": "Mountain View, CA", "manual_fields": ["manual verification", "link/manual review"], "manual_text": "Check: Manual verification; open and confirm application page", "rank": 17, "role_key": "2026-06-07|17|Nuro|Software Engineer New Grad - Performance", "salary": "salary visible but not extracted", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer New Grad - Performance", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://bostondynamics.wd1.myworkdayjobs.com/Boston_Dynamics/job/Waltham-MA/Software-Quality-Automation-Engineer_R2777", "company": "Boston Dynamics", "evidence_url": "", "fit_score": 78, "location": "Waltham, MA", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 18, "role_key": "2026-06-07|18|Boston Dynamics|Software Engineer in Test, Humanoid Robotics", "salary": "not listed", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer in Test, Humanoid Robotics", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://job-boards.greenhouse.io/trueanomalyinc/jobs/5152215007", "company": "True Anomaly", "evidence_url": "", "fit_score": 76, "location": "Denver, CO; Long Beach, CA", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 19, "role_key": "2026-06-07|19|True Anomaly|Software Engineer I, QA", "salary": "salary visible on page", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer I, QA", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://cvshealth.wd1.myworkdayjobs.com/en-US/cvs_health_careers/job/TX---Richardson/Associate-Software-Development-Engineer_R0745817-1", "company": "CVS Health", "evidence_url": "", "fit_score": 75, "location": "Richardson, TX", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 20, "role_key": "2026-06-07|20|CVS Health|Associate Software Development Engineer", "salary": "not listed", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Associate Software Development Engineer", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://symbotic.wd504.myworkdayjobs.com/Symbotic/job/USA-Wilmington--MA---HQ/New-Grad--Software-Engineer_R6770", "company": "Symbotic", "evidence_url": "", "fit_score": 74, "location": "Wilmington/Burlington, MA", "manual_fields": ["manual verification", "link/manual review"], "manual_text": "Check: Manual verification; open and confirm application page", "rank": 21, "role_key": "2026-06-07|21|Symbotic|New Grad - Software Engineer", "salary": "prior $96,000-$132,000", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "New Grad - Software Engineer", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://www.amazon.jobs/en/jobs/3177934/software-development-engineer-2026-us", "company": "Amazon", "evidence_url": "", "fit_score": 73, "location": "Seattle, WA", "manual_fields": ["manual verification", "link/manual review"], "manual_text": "Check: Manual verification; open and confirm application page", "rank": 22, "role_key": "2026-06-07|22|Amazon|Software Development Engineer - 2026 US", "salary": "not listed", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Development Engineer - 2026 US", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://www.google.com/about/careers/applications/jobs/results/143333237156913862-software-engineer-ii/", "company": "Google", "evidence_url": "", "fit_score": 71, "location": "12 US locations", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 23, "role_key": "2026-06-07|23|Google|Software Engineer II, Early Career", "salary": "not checked", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer II, Early Career", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://careersatdoordash.com/job-search/", "company": "DoorDash", "evidence_url": "", "fit_score": 70, "location": "NYC; SF; LA; Seattle; Sunnyvale", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 24, "role_key": "2026-06-07|24|DoorDash|Software Engineer I - Entry Level", "salary": "not checked", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer I - Entry Level", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/Deep-Learning-Software-Engineer--FlashInfer---New-College-Grad-2026_JR2017076", "company": "NVIDIA", "evidence_url": "", "fit_score": 70, "location": "Santa Clara, CA", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 25, "role_key": "2026-06-07|25|NVIDIA|Deep Learning Software Engineer, FlashInfer - New College Grad 2026", "salary": "not checked", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Deep Learning Software Engineer, FlashInfer - New College Grad 2026", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://jobs.ashbyhq.com/ramp/a1229aec-1105-4c47-8533-b912e732ed89", "company": "Ramp", "evidence_url": "", "fit_score": 69, "location": "New York, NY", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 26, "role_key": "2026-06-07|26|Ramp|University Grad Software Engineer - Frontend", "salary": "not checked", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "University Grad Software Engineer - Frontend", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://jobs.ashbyhq.com/n1/a3e25c84-0846-454a-b2fc-a356c2a713bd/application", "company": "N1", "evidence_url": "", "fit_score": 69, "location": "NYC / Remote US / SF Bay Area", "manual_fields": ["manual verification", "link/manual review"], "manual_text": "Check: Manual verification; open and confirm application page", "rank": 27, "role_key": "2026-06-07|27|N1|New Grad Software Engineer - Backend Rust", "salary": "$120,000-$260,000 base", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "New Grad Software Engineer - Backend Rust", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://jobs.smartrecruiters.com/ServiceNow/99c06c61-284f-4c2b-bd4d-1a7b53bf3fa4", "company": "ServiceNow / Moveworks", "evidence_url": "", "fit_score": 68, "location": "Mountain View, CA", "manual_fields": ["manual verification", "link/manual review"], "manual_text": "Check: Manual verification; open and confirm application page", "rank": 28, "role_key": "2026-06-07|28|ServiceNow / Moveworks|Associate SWE, Search Infrastructure", "salary": "prior tracked", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Associate SWE, Search Infrastructure", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://job-boards.greenhouse.io/sigmacomputing/jobs/7690411003", "company": "Sigma Computing", "evidence_url": "", "fit_score": 68, "location": "San Francisco, CA; New York, NY", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 29, "role_key": "2026-06-07|29|Sigma Computing|Software Engineer New Grad", "salary": "not checked", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "Software Engineer New Grad", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}, {"application_pack_url": "", "apply_url": "https://jobs.ashbyhq.com/Lightfield/bb758825-5422-46c4-86c3-0be1cc89148f/application", "company": "Lightfield", "evidence_url": "", "fit_score": 67, "location": "San Francisco, CA", "manual_fields": ["link/manual review"], "manual_text": "Check: open and confirm application page", "rank": 30, "role_key": "2026-06-07|30|Lightfield|AI Product Engineer - New Grad", "salary": "not checked", "status_class": "review", "status_label": "Review Link", "status_text": "Review required before applying", "tailored_resume_docx_url": "", "tailored_resume_url": "", "title": "AI Product Engineer - New Grad", "validation_url": "", "verification_status": "direct_detail_verified_manual_review"}], "research": [], "run_date": "2026-06-07", "run_id": "job-scout-dashboard-2026-06-07T202227", "stale": [], "summary": {"data_path": "data/runs/2026-06-07.json", "generated_at": "2026-06-07T20:22:27-04:00", "manual_review": 30, "open_apply": 0, "research": 0, "run_date": "2026-06-07", "run_id": "job-scout-dashboard-2026-06-07T202227", "stale": 0, "total_roles": 30}}};
+
+    const runs = window.JOB_SCOUT_RUNS || {};
+    const selector = document.querySelector("[data-run-selector]");
+    const runLine = document.querySelector("[data-run-line]");
+    const jobList = document.querySelector("[data-job-list]");
+    const DECISION_STORAGE_KEY = "jobScoutDecisions:v1";
+    const ALLOWED_DECISIONS = new Set(["applied", "not_applied", "link_not_working"]);
+    let decisions = loadDecisions();
+
+    function escapeHtml(value) {
+      return String(value || "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      }[char]));
+    }
+
+    function loadDecisions() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(DECISION_STORAGE_KEY) || "{}");
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+          return {};
+        }
+        return sanitizeImportedDecisions(parsed);
+      } catch {
+        return {};
+      }
+    }
+
+    function saveDecisions() {
+      localStorage.setItem(DECISION_STORAGE_KEY, JSON.stringify(decisions));
+    }
+
+    function collectKnownRoleKeys() {
+      const knownRoleKeys = new Set();
+      Object.values(runs).forEach((run) => {
+        if (!run || !Array.isArray(run.jobs)) {
+          return;
+        }
+        run.jobs.forEach((job) => {
+          if (job && job.role_key) {
+            knownRoleKeys.add(String(job.role_key));
+          }
+        });
+      });
+      return knownRoleKeys;
+    }
+
+    function sanitizeImportedDecisions(parsed) {
+      const knownRoleKeys = collectKnownRoleKeys();
+      const sanitized = {};
+      Object.entries(parsed).forEach(([key, value]) => {
+        if (knownRoleKeys.has(key)) {
+          if (ALLOWED_DECISIONS.has(value)) {
+            sanitized[key] = value;
+          }
+        }
+      });
+      return sanitized;
+    }
+
+    function exportDecisions() {
+      const blob = new Blob([JSON.stringify(decisions, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `job-scout-decisions-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function importDecisions(file) {
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+        try {
+          const parsed = JSON.parse(String(reader.result || "{}"));
+          if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+            return;
+          }
+          const imported = sanitizeImportedDecisions(parsed);
+          decisions = { ...decisions, ...imported };
+          saveDecisions();
+          applyDecisionState(document);
+        } catch {
+          return;
+        }
+      });
+      reader.readAsText(file);
+    }
+
+    function linkHtml(label, href, cssClass) {
+      if (!href) {
+        return "";
+      }
+      return `<a class="${cssClass}" href="${escapeHtml(href)}" target="_blank" rel="noreferrer">${escapeHtml(label)}</a>`;
+    }
+
+    function actionClass(job) {
+      if (job.status_class === "open") {
+        return "btn primary";
+      }
+      if (job.status_class === "stale") {
+        return "btn ghost";
+      }
+      return "btn secondary";
+    }
+
+    function decisionControlsHtml(job) {
+      return `
+        <div class="decision-controls" data-decision-controls data-role-key="${escapeHtml(job.role_key)}" aria-label="Application decision for ${escapeHtml(job.company)} ${escapeHtml(job.title)}">
+          <button type="button" data-decision-choice="applied">Applied</button>
+          <button type="button" data-decision-choice="not_applied">Not Applied</button>
+          <button type="button" data-decision-choice="link_not_working">Link Not Working</button>
+        </div>
+      `;
+    }
+
+    function applyDecisionState(root = document) {
+      const decisionGroups = [];
+      if (root.matches && root.matches("[data-decision-controls]")) {
+        decisionGroups.push(root);
+      }
+      root.querySelectorAll("[data-decision-controls]").forEach((controls) => {
+        decisionGroups.push(controls);
+      });
+      decisionGroups.forEach((controls) => {
+        let value = decisions[controls.dataset.roleKey] || "not_applied";
+        if (!ALLOWED_DECISIONS.has(value)) {
+          value = "not_applied";
+        }
+        controls.querySelectorAll("[data-decision-choice]").forEach((button) => {
+          const active = button.dataset.decisionChoice === value;
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+      });
+    }
+
+    function renderRun(dateKey) {
+      const run = runs[dateKey];
+      if (!run || !jobList) {
+        return;
+      }
+      document.querySelector("[data-metric='total']").textContent = run.summary.total_roles;
+      document.querySelector("[data-metric='easy']").textContent = run.summary.open_apply;
+      document.querySelector("[data-metric='manual']").textContent = run.summary.manual_review;
+      document.querySelector("[data-metric='stale']").textContent = run.summary.stale;
+      if (runLine) {
+        runLine.textContent = `Run ${run.run_id || "local-dashboard"} · Generated ${run.generated_at || ""} · Apply links shown here must be same-run verified.`;
+      }
+      jobList.innerHTML = run.jobs.map((job) => `
+        <article class="role-card" data-status="${escapeHtml(job.status_class)}">
+          <div class="rank">#${escapeHtml(job.rank)}</div>
+          <div class="role-main">
+            <h3>${escapeHtml(job.company)}</h3>
+            <p class="title">${escapeHtml(job.title)}</p>
+            <p class="meta">${escapeHtml(job.location || "")} · Fit ${escapeHtml(job.fit_score)} · ${escapeHtml(job.salary || "Salary not listed")}</p>
+            <p class="status">${escapeHtml(job.status_text)}</p>
+            ${job.manual_text ? `<p class="manual">${escapeHtml(job.manual_text)}</p>` : ""}
+          </div>
+          <div class="actions">
+            ${decisionControlsHtml(job)}
+            ${linkHtml(job.status_label, job.apply_url, actionClass(job))}
+            ${linkHtml("Pack", job.application_pack_url, "btn secondary")}
+            ${linkHtml("Resume PDF", job.tailored_resume_url, "btn secondary")}
+            ${linkHtml("Resume DOCX", job.tailored_resume_docx_url, "btn secondary")}
+            ${linkHtml("Evidence", job.evidence_url, "btn ghost")}
+            ${linkHtml("Validation", job.validation_url, "btn ghost")}
+          </div>
+        </article>
+      `).join("");
+      applyDecisionState(jobList);
+    }
+
+    document.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-decision-choice]");
+      if (!button) {
+        return;
+      }
+      const controls = button.closest("[data-decision-controls]");
+      if (!controls || !controls.dataset.roleKey) {
+        return;
+      }
+      if (!ALLOWED_DECISIONS.has(button.dataset.decisionChoice)) {
+        return;
+      }
+      decisions[controls.dataset.roleKey] = button.dataset.decisionChoice;
+      saveDecisions();
+      applyDecisionState(controls);
+    });
+
+    document.querySelector("[data-export-decisions]")?.addEventListener("click", exportDecisions);
+    document.querySelector("[data-import-decisions-trigger]")?.addEventListener("click", () => {
+      document.querySelector("[data-import-decisions]")?.click();
+    });
+    document.querySelector("[data-import-decisions]")?.addEventListener("change", (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (file) {
+        importDecisions(file);
+      }
+      event.target.value = "";
+    });
+
+    if (selector) {
+      for (const run of window.JOB_SCOUT_MANIFEST.runs || []) {
+        const option = document.createElement("option");
+        option.value = run.run_date;
+        option.textContent = `${run.run_date} (${run.total_roles} roles)`;
+        selector.appendChild(option);
+      }
+      selector.value = window.JOB_SCOUT_MANIFEST.latest_run_date;
+      selector.addEventListener("change", (event) => renderRun(event.target.value));
+      renderRun(selector.value);
+    } else {
+      applyDecisionState(document);
+    }
+  </script>
+</body>
+</html>
