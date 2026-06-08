@@ -3,12 +3,12 @@
   "runs": [
     {
       "data_path": "data/runs/2026-06-08.json",
-      "generated_at": "2026-06-08T13:23:54-04:00",
+      "generated_at": "2026-06-08T13:29:08-04:00",
       "manual_review": 30,
       "open_apply": 0,
       "research": 0,
       "run_date": "2026-06-08",
-      "run_id": "job-scout-dashboard-2026-06-08T132354",
+      "run_id": "job-scout-dashboard-2026-06-08T132908",
       "stale": 0,
       "total_roles": 30
     },
