@@ -1,7 +1,7 @@
 {
   "name": "job-automator",
   "version": "1.0.0",
-  "description": "Automate job applications using Playwright browser automation",
+  "description": "Daily new-grad job scout, source-backed resume pack generator, application tracker, and public dashboard publisher",
   "type": "module",
   "main": "src/index.js",
   "bin": {
@@ -12,6 +12,11 @@
     "search": "node src/index.js search",
     "track": "node src/index.js track",
     "dashboard": "node src/index.js dashboard",
+    "scout": "python3 scripts/generate_job_dashboard.py",
+    "open-dashboard": "bash scripts/open_job_dashboard.sh",
+    "publish-dashboard": "bash scripts/publish_dashboard_pages.sh",
+    "audit-run": "python3 scripts/post_run_audit.py",
+    "test:python": "${JOB_AUTOMATOR_PYTHON:-python3} -m unittest discover -s tests -v",
     "postinstall": "npx playwright install chromium"
   },
   "keywords": [

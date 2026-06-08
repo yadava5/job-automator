@@ -39,3 +39,15 @@ npm-debug.log*
 # Build
 dist/
 build/
+
+# Private local resume sources and generated application artifacts
+docs/archive/legacy-auto-apply/
+docs/superpowers/
+resume/source/current/*.pdf
+resume/archive/
+resume/generated/
+outputs/
+tmp/
+.playwright-cli/
+__pycache__/
+*.pyc

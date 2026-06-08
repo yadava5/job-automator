@@ -7,37 +7,50 @@
     "email": "yadava5@miamioh.edu",
     "phone": "",
     "url": "",
-    "summary": "Software engineer with experience in full-stack development, passionate about building scalable applications using modern technologies.",
+    "summary": "Computer Science graduate from Miami University (B.S. in Computer Science, May 2026; 3.47 overall GPA) with experience building Python and SQL data pipelines, full-stack products, applied ML workflows, and reliability-focused tooling.",
     "location": {
       "address": "",
       "postalCode": "",
-      "city": "",
+      "city": "Oxford",
       "countryCode": "US",
-      "region": ""
+      "region": "OH"
     },
     "profiles": [
       {
         "network": "LinkedIn",
-        "username": "",
-        "url": ""
+        "username": "ayush-yadav-developer",
+        "url": "https://linkedin.com/in/ayush-yadav-developer"
       },
       {
         "network": "GitHub",
-        "username": "",
-        "url": ""
+        "username": "yadava5",
+        "url": "https://github.com/yadava5"
       }
     ]
   },
   "work": [
     {
-      "name": "Company Name",
-      "position": "Software Engineer",
-      "url": "",
-      "startDate": "2024-01-01",
+      "name": "Miami University",
+      "position": "ITSM Data Integration Student Associate (Intern)",
+      "url": "https://miamioh.edu",
+      "startDate": "2025-06-01",
       "endDate": "",
-      "summary": "Description of role and responsibilities.",
+      "summary": "Built Python/SQL pipelines for 1M+ row datasets; analyzed trends and KPIs. Delivered Tableau dashboards with actionable insights for IT/non-IT teams. Built Workday/OAS/Tableau report inventory + API-integrated Slack bot.",
       "highlights": [
-        "Key achievement or responsibility"
+        "Built Python/SQL pipelines for 1M+ row datasets; analyzed trends and KPIs",
+        "Delivered Tableau dashboards with actionable insights for IT/non-IT teams",
+        "Built Workday/OAS/Tableau report inventory + API-integrated Slack bot"
+      ]
+    },
+    {
+      "name": "Market Street at MacCracken",
+      "position": "Student Worker",
+      "url": "",
+      "startDate": "2023-08-01",
+      "endDate": "2023-12-01",
+      "summary": "Supported checkout and grill operations; maintained accurate service and safety standards.",
+      "highlights": [
+        "Supported checkout and grill operations; maintained accurate service and safety standards"
       ]
     }
   ],
@@ -46,55 +59,85 @@
       "institution": "Miami University",
       "url": "https://miamioh.edu",
       "area": "Computer Science",
-      "studyType": "Bachelor",
-      "startDate": "",
-      "endDate": "",
-      "score": "",
-      "courses": []
+      "studyType": "Bachelor of Science",
+      "startDate": "2022-08-01",
+      "endDate": "2026-05-01",
+      "score": "3.47 Overall | 3.65 CS Coursework",
+      "courses": [
+        "CSE 385 - Database Systems",
+        "CSE 432 - Machine Learning",
+        "CSE 443 - High Performance Computing",
+        "CSE 484 - Algorithms II",
+        "CSE 448/449 - Senior Design Project I/II"
+      ]
     }
   ],
   "skills": [
     {
-      "name": "Frontend Development",
+      "name": "Languages",
+      "level": "Advanced",
+      "keywords": [
+        "Python",
+        "Java",
+        "C++",
+        "JavaScript",
+        "TypeScript",
+        "SQL",
+        "HTML",
+        "CSS"
+      ]
+    },
+    {
+      "name": "Frameworks & Libraries",
       "level": "Advanced",
       "keywords": [
         "React",
-        "TypeScript",
-        "HTML/CSS",
-        "Tailwind CSS"
-      ]
-    },
-    {
-      "name": "Backend Development",
-      "level": "Advanced",
-      "keywords": [
-        "Node.js",
+        "Tauri",
+        "NestJS",
         "Express",
-        "Python",
-        "REST APIs"
+        "Prisma",
+        "Zod",
+        "SwiftUI",
+        "ARKit",
+        "Vision",
+        "OpenMP",
+        "PyTorch",
+        "Scikit-learn"
       ]
     },
     {
-      "name": "Programming Languages",
-      "level": "Advanced",
+      "name": "Databases",
+      "level": "Intermediate",
       "keywords": [
-        "JavaScript",
-        "TypeScript",
-        "Python",
-        "Java",
-        "Rust",
-        "SQL"
+        "PostgreSQL",
+        "MySQL",
+        "SQL optimization"
       ]
     },
     {
       "name": "DevOps & Tools",
       "level": "Intermediate",
       "keywords": [
-        "Docker",
         "Git",
-        "GitHub Actions",
-        "MySQL",
-        "Linux"
+        "Docker",
+        "Linux/Unix CLI",
+        "Visual Studio Code",
+        "Eclipse",
+        "Xcode",
+        "Google Colab",
+        "GitHub Actions"
+      ]
+    },
+    {
+      "name": "Testing",
+      "level": "Intermediate",
+      "keywords": [
+        "Catch2",
+        "CTest",
+        "Google Benchmark",
+        "Playwright",
+        "Unit Testing",
+        "Integration Testing"
       ]
     }
   ],
@@ -106,28 +149,159 @@
   ],
   "projects": [
     {
-      "name": "Project Name",
-      "description": "Brief project description.",
+      "name": "AutoML – Automated Data Scientist Platform",
+      "description": "RAG + MCP platform for domain-tuned ML services (deploy + monitor). Automated training: HPO/multi-model search + SFT; containerized runs. TS monorepo: React (Vite), Express, Postgres, Playwright evals.",
       "highlights": [
-        "Key feature or technology used"
+        "RAG + MCP platform for domain-tuned ML services (deploy + monitor)",
+        "Automated training: HPO/multi-model search + SFT; containerized runs",
+        "TS monorepo: React (Vite), Express, Postgres, Playwright evals"
       ],
       "keywords": [
         "React",
-        "Node.js"
+        "TypeScript",
+        "Express",
+        "PostgreSQL",
+        "Playwright",
+        "Docker",
+        "Machine Learning"
       ],
-      "startDate": "",
+      "startDate": "2025-09-01",
+      "endDate": "2026-05-01",
+      "url": "",
+      "roles": [
+        "Lead Developer"
+      ],
+      "type": "application"
+    },
+    {
+      "name": "Visual Assist – iOS LiDAR Visual Assistance App",
+      "description": "On-device iOS LiDAR navigation with depth scan + audio/haptics. Vision OCR + object awareness; VoiceOver + voice commands.",
+      "highlights": [
+        "On-device iOS LiDAR navigation with depth scan + audio/haptics",
+        "Vision OCR + object awareness; VoiceOver + voice commands",
+        "Wearable planned; current version targets iOS LiDAR devices"
+      ],
+      "keywords": [
+        "Swift",
+        "SwiftUI",
+        "ARKit",
+        "Vision",
+        "iOS",
+        "LiDAR",
+        "Accessibility"
+      ],
+      "startDate": "2026-01-01",
       "endDate": "",
       "url": "",
       "roles": [
         "Developer"
       ],
       "type": "application"
+    },
+    {
+      "name": "TaskFlow Calendar",
+      "description": "Production-ready full-stack calendar & task management platform with NLP-powered smart input, multi-calendar support, and real-time conflict detection. 738 passing tests.",
+      "highlights": [
+        "React 19, TypeScript, PostgreSQL, Vercel serverless",
+        "NLP-powered smart input and real-time conflict detection",
+        "738 passing tests with comprehensive documentation"
+      ],
+      "keywords": [
+        "React",
+        "TypeScript",
+        "PostgreSQL",
+        "Vercel",
+        "NLP",
+        "Testing"
+      ],
+      "startDate": "2023-12-01",
+      "endDate": "2023-12-01",
+      "url": "https://github.com/yadava5/taskflow-calendar",
+      "roles": [
+        "Developer"
+      ],
+      "type": "application"
+    },
+    {
+      "name": "LifeQuest – Quest-Based Routine & Community Platform",
+      "description": "Desktop quest platform turning routines into missions for job loss/retirement. Tauri + React + NestJS (Postgres/Prisma) for quests, progress, rewards.",
+      "highlights": [
+        "Desktop quest platform turning routines into missions",
+        "Tauri + React + NestJS (Postgres/Prisma) for quests, progress, rewards",
+        "Future iOS app will add map-based quest experience"
+      ],
+      "keywords": [
+        "Tauri",
+        "React",
+        "NestJS",
+        "PostgreSQL",
+        "Prisma",
+        "TypeScript"
+      ],
+      "startDate": "2025-04-01",
+      "endDate": "2025-04-01",
+      "url": "https://github.com/yadava5/LifeQuest",
+      "roles": [
+        "Developer"
+      ],
+      "type": "application"
+    },
+    {
+      "name": "Fast MNIST NN – High-Performance C++ Neural Network",
+      "description": "C++17 MNIST NN with SIMD kernels + OpenMP hot paths. CLI train/eval pipeline; cached MNIST loader for repeat runs. Catch2/CTest, Google Benchmark, CI.",
+      "highlights": [
+        "C++17 MNIST NN with SIMD kernels + OpenMP hot paths",
+        "CLI train/eval pipeline; cached MNIST loader for repeat runs",
+        "Catch2/CTest, Google Benchmark, CI, Doxygen, clang-format"
+      ],
+      "keywords": [
+        "C++",
+        "SIMD",
+        "OpenMP",
+        "HPC",
+        "Neural Network"
+      ],
+      "startDate": "2025-11-01",
+      "endDate": "2025-11-01",
+      "url": "https://github.com/yadava5/fast-mnist-nn",
+      "roles": [
+        "Developer"
+      ],
+      "type": "application"
     }
   ],
-  "awards": [],
+  "awards": [
+    {
+      "title": "Finalist – MUCAT Design Innovation Competition",
+      "date": "2025-02-01",
+      "awarder": "Miami University",
+      "summary": "Selected as finalist team; authored LiDAR visual assistance proposal (foundation for Visual Assist)"
+    },
+    {
+      "title": "4th Place – Social Innovation Weekend",
+      "date": "2025-03-01",
+      "awarder": "Miami University",
+      "summary": "Built user-centered solutions to loneliness/isolation; placed 4th among interdisciplinary teams"
+    },
+    {
+      "title": "Dean's List",
+      "date": "2025-12-01",
+      "awarder": "Miami University",
+      "summary": "Fall 2023, Spring 2025, Fall 2025"
+    }
+  ],
+  "volunteer": [
+    {
+      "organization": "USM, Indore, India",
+      "position": "Volunteer Teacher",
+      "url": "",
+      "startDate": "2017-01-01",
+      "endDate": "2018-12-01",
+      "summary": "Taught basic education to underserved children, promoting literacy and inclusion."
+    }
+  ],
   "certificates": [],
   "publications": [],
-  "volunteer": [],
   "interests": [],
   "references": []
 }
