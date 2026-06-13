@@ -1,6 +1,17 @@
 {
-  "latest_run_date": "2026-06-12",
+  "latest_run_date": "2026-06-13",
   "runs": [
+    {
+      "data_path": "data/runs/2026-06-13.json",
+      "generated_at": "2026-06-13T13:28:08-04:00",
+      "manual_review": 30,
+      "open_apply": 0,
+      "research": 0,
+      "run_date": "2026-06-13",
+      "run_id": "job-scout-dashboard-2026-06-13T132808",
+      "stale": 0,
+      "total_roles": 30
+    },
     {
       "data_path": "data/runs/2026-06-12.json",
       "generated_at": "2026-06-12T13:15:18-04:00",
